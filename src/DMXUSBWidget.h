@@ -34,6 +34,7 @@ class DMXUSBWidget
         virtual bool readUSB(uint8_t* buffer, size_t& size, const size_t maxSize) = 0;
         virtual bool writeUSB(uint8_t* buffer, size_t size)                       = 0;
         virtual bool updateChannel(uint16_t channel, uint8_t value)               = 0;
+        virtual void packetComplete()                                             = 0;
     };
 
     DMXUSBWidget(HWA& hwa)
@@ -85,6 +86,8 @@ class DMXUSBWidget
     uint8_t  _label                          = 0;
     uint16_t _dataLength                     = 0;
     uint16_t _dataCounter                    = 0;
+    uint16_t _channelToUpdate                = 0;
+    uint8_t  _byteParseCount                 = 0;
     uint8_t  _usbReadBuffer[USB_BUFFER_SIZE] = {};
 
     void sendDeviceID();

@@ -109,7 +109,44 @@ void DMXUSBWidget::read()
 
             case state_t::data:
             {
-                _hwa.updateChannel(_dataCounter, data);
+                if (_dataLength < 513)
+                {
+                    //diff mode:
+                    //a packet is composed of 2 bytes of channel to update
+                    //next value is actual channel value
+                    //the pattern repeats for requested number of channels
+                    _byteParseCount++;
+
+                    switch (_byteParseCount)
+                    {
+                    case 1:
+                    {
+                        _channelToUpdate = data;
+                    }
+                    break;
+
+                    case 2:
+                    {
+                        _channelToUpdate |= (data << 8);
+                    }
+                    break;
+
+                    case 3:
+                    {
+                        _byteParseCount = 0;
+                        _hwa.updateChannel(_channelToUpdate, data);
+                    }
+                    break;
+
+                    default:
+                        break;
+                    }
+                }
+                else
+                {
+                    //normal mode
+                    _hwa.updateChannel(_dataCounter, data);
+                }
 
                 if (++_dataCounter == _dataLength)
                 {
@@ -127,6 +164,12 @@ void DMXUSBWidget::read()
 
                     switch (labelEnum)
                     {
+                    case label_t::sendDMX:
+                    {
+                        _hwa.packetComplete();
+                    }
+                    break;
+
                     case label_t::getSerialNumber:
                     {
                         uint8_t buffer[9] = {
@@ -168,6 +211,9 @@ void DMXUSBWidget::read()
                         break;
                     }
                 }
+
+                _channelToUpdate = 0;
+                _byteParseCount  = 0;
             }
             break;
 
