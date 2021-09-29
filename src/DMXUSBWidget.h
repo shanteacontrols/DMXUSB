@@ -20,6 +20,7 @@ limitations under the License.
 
 #include <cstddef>
 #include <inttypes.h>
+#include <string.h>
 
 class DMXUSBWidget
 {
@@ -37,6 +38,48 @@ class DMXUSBWidget
         virtual void packetComplete()                                             = 0;
     };
 
+    struct widgetInfo_t
+    {
+        uint32_t serialNr         = 0xFFFFFFFF;
+        uint16_t estaID           = 0xFFFF;
+        uint16_t deviceID         = 0x00;
+        uint16_t fwVersion        = 0;
+        char     manufacturer[32] = {};
+        char     deviceName[32]   = {};
+
+        struct fwVersion_t
+        {
+            uint8_t major    = 0;
+            uint8_t minor    = 0;
+            uint8_t revision = 0;
+        };
+
+        widgetInfo_t(uint32_t    serialNr,
+                     uint16_t    estaID,
+                     uint16_t    deviceID,
+                     fwVersion_t fwVersion,
+                     const char* manufacturer,
+                     const char* deviceName)
+            : serialNr(serialNr)
+            , estaID(estaID)
+            , deviceID(deviceID)
+        {
+            for (size_t i = 0; i < strlen(manufacturer) && i < 32; i++)
+                this->manufacturer[i] = manufacturer[i];
+
+            for (size_t i = 0; i < strlen(deviceName) && i < 32; i++)
+                this->deviceName[i] = deviceName[i];
+
+            //major version gets 8 bits (upper byte)
+            //minor and revision get 4 bits each and are stored in lower byte
+            this->fwVersion = fwVersion.major;
+            this->fwVersion <<= 8;
+            this->fwVersion |= (fwVersion.minor << 4 | fwVersion.revision);
+        }
+
+        widgetInfo_t() = default;
+    };
+
     DMXUSBWidget(HWA& hwa)
         : _hwa(hwa)
     {}
@@ -44,7 +87,7 @@ class DMXUSBWidget
     bool init();
     bool deInit();
     bool isInitialized();
-    void setSerialNumber(uint32_t serialNr);
+    void setWidgetInfo(widgetInfo_t&& widgetInfo);
     void read();
 
     private:
@@ -65,31 +108,35 @@ class DMXUSBWidget
 
     enum class label_t : uint8_t
     {
-        reprogramFWreq      = 1,
-        programFlashPage    = 2,
-        getWidgetParams     = 3,
-        setWidgetParams     = 4,
-        receivedPacket      = 5,
-        sendDMX             = 6,
-        sendRDM             = 7,
-        receiveDMXonChange  = 8,
-        receivedDMXonChange = 9,
-        getSerialNumber     = 10,
-        sendRDMdiscoveryReq = 11,
+        reprogramFWreq        = 1,
+        programFlashPage      = 2,
+        getWidgetParams       = 3,
+        setWidgetParams       = 4,
+        receivedPacket        = 5,
+        sendDMX               = 6,
+        sendRDM               = 7,
+        receiveDMXonChange    = 8,
+        receivedDMXonChange   = 9,
+        getSerialNumber       = 10,
+        sendRDMdiscoveryReq   = 11,
+        deviceManufacturerReq = 77,
+        deviceNameReq         = 78,
     };
 
     static constexpr size_t USB_BUFFER_SIZE = 64;
 
-    bool     _initialized                    = false;
-    uint32_t _serialNr                       = 0xFFFFFFFF;
-    state_t  _state                          = state_t::start;
-    uint8_t  _label                          = 0;
-    uint16_t _dataLength                     = 0;
-    uint16_t _dataCounter                    = 0;
-    uint16_t _channelToUpdate                = 0;
-    uint8_t  _byteParseCount                 = 0;
-    uint8_t  _usbReadBuffer[USB_BUFFER_SIZE] = {};
+    bool         _initialized                    = false;
+    state_t      _state                          = state_t::start;
+    uint8_t      _label                          = 0;
+    uint16_t     _dataLength                     = 0;
+    uint16_t     _dataCounter                    = 0;
+    uint8_t      _usbReadBuffer[USB_BUFFER_SIZE] = {};
+    uint16_t     _channelToUpdate                = 0;
+    uint8_t      _byteParseCount                 = 0;
+    widgetInfo_t _widgetInfo;
 
+    void sendHeader(label_t label, size_t size);
+    void sendFooter();
     void sendDeviceID();
     void sendDeviceSerNum();
     void sendWidgetParams();

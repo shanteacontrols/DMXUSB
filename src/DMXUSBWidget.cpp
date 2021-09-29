@@ -17,6 +17,7 @@ limitations under the License.
 */
 
 #include "DMXUSBWidget.h"
+#include <utility>
 
 bool DMXUSBWidget::init()
 {
@@ -50,9 +51,9 @@ bool DMXUSBWidget::isInitialized()
     return _initialized;
 }
 
-void DMXUSBWidget::setSerialNumber(uint32_t serialNr)
+void DMXUSBWidget::setWidgetInfo(widgetInfo_t&& widgetInfo)
 {
-    _serialNr = serialNr;
+    _widgetInfo = std::move(widgetInfo);
 }
 
 void DMXUSBWidget::read()
@@ -172,38 +173,72 @@ void DMXUSBWidget::read()
 
                     case label_t::getSerialNumber:
                     {
-                        uint8_t buffer[9] = {
-                            START_BYTE,
-                            _label,
-                            4,    // data length LSB
-                            0,    // data length MSB
-                            static_cast<uint8_t>((_serialNr >> 24) & 0xFF),
-                            static_cast<uint8_t>((_serialNr >> 16) & 0xFF),
-                            static_cast<uint8_t>((_serialNr >> 8) & 0xFF),
-                            static_cast<uint8_t>((_serialNr >> 0) & 0xFF),
-                            END_BYTE
+                        constexpr size_t size = 4;
+
+                        uint8_t buffer[size] = {
+                            static_cast<uint8_t>((_widgetInfo.serialNr >> 24) & 0xFF),
+                            static_cast<uint8_t>((_widgetInfo.serialNr >> 16) & 0xFF),
+                            static_cast<uint8_t>((_widgetInfo.serialNr >> 8) & 0xFF),
+                            static_cast<uint8_t>((_widgetInfo.serialNr >> 0) & 0xFF),
                         };
 
-                        _hwa.writeUSB(buffer, 9);
+                        sendHeader(labelEnum, size);
+                        _hwa.writeUSB(buffer, size);
+                        sendFooter();
                     }
                     break;
 
                     case label_t::getWidgetParams:
                     {
-                        uint8_t buffer[10] = {
-                            START_BYTE,
-                            _label,
-                            0x05,    // data length LSB
-                            0x00,    // data length MSB
-                            0x00,    // firmware version LSB
-                            0x01,    // firmware version MSB
-                            0x09,    // DMX output break time in 10.67 microsecond units: 9
-                            0x01,    // DMX output Mark After Break time in 10.67 microsecond units: 1
-                            0x28,    // DMX output rate in packets per second: 40
-                            END_BYTE
+                        constexpr size_t size = 5;
+
+                        uint8_t buffer[size] = {
+                            static_cast<uint8_t>((_widgetInfo.fwVersion >> 0) & 0xFF),    // firmware version LSB
+                            static_cast<uint8_t>((_widgetInfo.fwVersion >> 8) & 0xFF),    // firmware version MSB
+                            0x09,                                                         // DMX output break time in 10.67 microsecond units: 9
+                            0x01,                                                         // DMX output Mark After Break time in 10.67 microsecond units: 1
+                            0x28,                                                         // DMX output rate in packets per second: 40
                         };
 
-                        _hwa.writeUSB(buffer, 10);
+                        sendHeader(labelEnum, size);
+                        _hwa.writeUSB(buffer, size);
+                        sendFooter();
+                    }
+                    break;
+
+                    case label_t::deviceManufacturerReq:
+                    {
+                        size_t size = sizeof(_widgetInfo.estaID) + strlen(_widgetInfo.manufacturer);
+
+                        uint8_t buffer[32];
+
+                        buffer[0] = _widgetInfo.estaID & 0xFF;
+                        buffer[1] = _widgetInfo.estaID >> 8 & 0xFF;
+
+                        for (size_t i = 0; i < strlen(_widgetInfo.manufacturer); i++)
+                            buffer[2 + i] = _widgetInfo.manufacturer[i];
+
+                        sendHeader(labelEnum, size);
+                        _hwa.writeUSB(buffer, size);
+                        sendFooter();
+                    }
+                    break;
+
+                    case label_t::deviceNameReq:
+                    {
+                        size_t size = sizeof(_widgetInfo.deviceID) + strlen(_widgetInfo.deviceName);
+
+                        uint8_t buffer[32];
+
+                        buffer[0] = _widgetInfo.deviceID & 0xFF;
+                        buffer[1] = _widgetInfo.deviceID >> 8 & 0xFF;
+
+                        for (size_t i = 0; i < strlen(_widgetInfo.deviceName); i++)
+                            buffer[2 + i] = _widgetInfo.deviceName[i];
+
+                        sendHeader(labelEnum, size);
+                        _hwa.writeUSB(buffer, size);
+                        sendFooter();
                     }
                     break;
 
@@ -223,4 +258,22 @@ void DMXUSBWidget::read()
             }
         }
     }
+}
+
+void DMXUSBWidget::sendHeader(label_t label, size_t size)
+{
+    uint8_t buffer[4];
+
+    buffer[0] = START_BYTE;
+    buffer[1] = static_cast<uint8_t>(label);
+    buffer[2] = size & 0xFF;
+    buffer[3] = (size >> 8) & 0xFF;
+
+    _hwa.writeUSB(buffer, 4);
+}
+
+void DMXUSBWidget::sendFooter()
+{
+    uint8_t footer = END_BYTE;
+    _hwa.writeUSB(&footer, 1);
 }
