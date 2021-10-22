@@ -49,9 +49,8 @@ class DMXUSBWidget
 
         struct fwVersion_t
         {
-            uint8_t major    = 0;
-            uint8_t minor    = 0;
-            uint8_t revision = 0;
+            uint8_t major = 0;
+            uint8_t minor = 0;
         };
 
         widgetInfo_t(uint32_t    serialNr,
@@ -70,11 +69,9 @@ class DMXUSBWidget
             for (size_t i = 0; i < strlen(deviceName) && i < 32; i++)
                 this->deviceName[i] = deviceName[i];
 
-            //major version gets 8 bits (upper byte)
-            //minor and revision get 4 bits each and are stored in lower byte
-            this->fwVersion = fwVersion.major;
-            this->fwVersion <<= 8;
-            this->fwVersion |= (fwVersion.minor << 4 | fwVersion.revision);
+            // major version gets upper byte
+            // minor version gets lower byte
+            this->fwVersion = (fwVersion.major << 8) | fwVersion.minor;
         }
 
         widgetInfo_t() = default;
