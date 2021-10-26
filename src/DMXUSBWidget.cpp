@@ -196,7 +196,7 @@ void DMXUSBWidget::read()
                             static_cast<uint8_t>((_widgetInfo.fwVersion >> 0) & 0xFF),    // firmware version LSB
                             static_cast<uint8_t>((_widgetInfo.fwVersion >> 8) & 0xFF),    // firmware version MSB
                             0x09,                                                         // DMX output break time in 10.67 microsecond units: 9
-                            0x01,                                                         // DMX output Mark After Break time in 10.67 microsecond units: 1
+                            0x02,                                                         // DMX output Mark After Break time in 10.67 microsecond units: 1
                             0x28,                                                         // DMX output rate in packets per second: 40
                         };
 
