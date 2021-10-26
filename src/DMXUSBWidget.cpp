@@ -112,10 +112,10 @@ void DMXUSBWidget::read()
             {
                 if (_dataLength < 513)
                 {
-                    //diff mode:
-                    //a packet is composed of 2 bytes of channel to update
-                    //next value is actual channel value
-                    //the pattern repeats for requested number of channels
+                    // diff mode:
+                    // a packet is composed of 2 bytes of channel to update
+                    // next value is actual channel value
+                    // the pattern repeats for requested number of channels
                     _byteParseCount++;
 
                     switch (_byteParseCount)
@@ -145,7 +145,7 @@ void DMXUSBWidget::read()
                 }
                 else
                 {
-                    //normal mode
+                    // normal mode
                     _hwa.updateChannel(_dataCounter, data);
                 }
 
