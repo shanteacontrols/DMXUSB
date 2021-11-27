@@ -82,9 +82,12 @@ void DMXUSBWidget::read()
             {
                 _label = data;
 
-                if (_label == static_cast<uint8_t>(label_t::sendDMX))
+                if ((_label == static_cast<uint8_t>(label_t::sendDMX)) || (_label == static_cast<uint8_t>(label_t::sendDiffDMX)))
                 {
                     _state = state_t::length_lsb;
+
+                    if (_label == static_cast<uint8_t>(label_t::sendDiffDMX))
+                        _diffMode = true;
                 }
                 else
                 {
@@ -110,7 +113,7 @@ void DMXUSBWidget::read()
 
             case state_t::data:
             {
-                if (_dataLength < 513)
+                if (_diffMode)
                 {
                     // diff mode:
                     // a packet is composed of 2 bytes of channel to update
@@ -249,6 +252,7 @@ void DMXUSBWidget::read()
 
                 _channelToUpdate = 0;
                 _byteParseCount  = 0;
+                _diffMode        = false;
             }
             break;
 

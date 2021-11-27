@@ -118,6 +118,7 @@ class DMXUSBWidget
         sendRDMdiscoveryReq   = 11,
         deviceManufacturerReq = 77,
         deviceNameReq         = 78,
+        sendDiffDMX           = 80,
     };
 
     static constexpr size_t USB_BUFFER_SIZE = 64;
@@ -130,6 +131,7 @@ class DMXUSBWidget
     uint8_t      _usbReadBuffer[USB_BUFFER_SIZE] = {};
     uint16_t     _channelToUpdate                = 0;
     uint8_t      _byteParseCount                 = 0;
+    bool         _diffMode                       = false;
     widgetInfo_t _widgetInfo;
 
     void sendHeader(label_t label, size_t size);
