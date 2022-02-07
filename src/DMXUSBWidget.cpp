@@ -179,10 +179,10 @@ void DMXUSBWidget::read()
                         constexpr size_t size = 4;
 
                         uint8_t buffer[size] = {
-                            static_cast<uint8_t>((_widgetInfo.serialNr >> 24) & 0xFF),
-                            static_cast<uint8_t>((_widgetInfo.serialNr >> 16) & 0xFF),
-                            static_cast<uint8_t>((_widgetInfo.serialNr >> 8) & 0xFF),
                             static_cast<uint8_t>((_widgetInfo.serialNr >> 0) & 0xFF),
+                            static_cast<uint8_t>((_widgetInfo.serialNr >> 8) & 0xFF),
+                            static_cast<uint8_t>((_widgetInfo.serialNr >> 16) & 0xFF),
+                            static_cast<uint8_t>((_widgetInfo.serialNr >> 24) & 0xFF),
                         };
 
                         sendHeader(labelEnum, size);
