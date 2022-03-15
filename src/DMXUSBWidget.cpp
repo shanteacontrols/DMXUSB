@@ -73,7 +73,7 @@ void DMXUSBWidget::read()
 
     size_t size = 0;
 
-    if (_hwa.readUSB(_usbReadBuffer, size, USB_BUFFER_SIZE))
+    if (_hwa.readUSB(_usbReadBuffer, size))
     {
         for (size_t i = 0; i < size; i++)
         {

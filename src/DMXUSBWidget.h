@@ -21,21 +21,26 @@ limitations under the License.
 #include <cstddef>
 #include <inttypes.h>
 #include <string.h>
+#include <array>
 
 class DMXUSBWidget
 {
     public:
+    static constexpr size_t USB_READ_BUFFER_SIZE = 64;
+
+    using usbReadBuffer_t = std::array<uint8_t, USB_READ_BUFFER_SIZE>;
+
     class HWA
     {
         public:
         HWA() = default;
 
-        virtual bool init()                                                       = 0;
-        virtual bool deInit()                                                     = 0;
-        virtual bool readUSB(uint8_t* buffer, size_t& size, const size_t maxSize) = 0;
-        virtual bool writeUSB(uint8_t* buffer, size_t size)                       = 0;
-        virtual bool updateChannel(uint16_t channel, uint8_t value)               = 0;
-        virtual void packetComplete()                                             = 0;
+        virtual bool init()                                         = 0;
+        virtual bool deInit()                                       = 0;
+        virtual bool readUSB(usbReadBuffer_t& buffer, size_t& size) = 0;
+        virtual bool writeUSB(uint8_t* buffer, size_t size)         = 0;
+        virtual bool updateChannel(uint16_t channel, uint8_t value) = 0;
+        virtual void packetComplete()                               = 0;
     };
 
     struct widgetInfo_t
@@ -123,18 +128,16 @@ class DMXUSBWidget
         sendDiffDMX           = 80,
     };
 
-    static constexpr size_t USB_BUFFER_SIZE = 64;
-
-    bool         _initialized                    = false;
-    state_t      _state                          = state_t::start;
-    uint8_t      _label                          = 0;
-    uint16_t     _dataLength                     = 0;
-    uint16_t     _dataCounter                    = 0;
-    uint8_t      _usbReadBuffer[USB_BUFFER_SIZE] = {};
-    uint16_t     _channelToUpdate                = 0;
-    uint8_t      _byteParseCount                 = 0;
-    bool         _diffMode                       = false;
-    widgetInfo_t _widgetInfo;
+    bool            _initialized     = false;
+    state_t         _state           = state_t::start;
+    uint8_t         _label           = 0;
+    uint16_t        _dataLength      = 0;
+    uint16_t        _dataCounter     = 0;
+    usbReadBuffer_t _usbReadBuffer   = {};
+    uint16_t        _channelToUpdate = 0;
+    uint8_t         _byteParseCount  = 0;
+    bool            _diffMode        = false;
+    widgetInfo_t    _widgetInfo;
 
     void sendHeader(label_t label, size_t size);
     void sendFooter();
