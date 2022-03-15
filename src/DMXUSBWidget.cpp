@@ -324,3 +324,16 @@ void DMXUSBWidget::setNewBuffer()
 
     std::copy(std::begin(*_activeBuffer), std::end(*_activeBuffer), std::begin(*_writeBuffer));
 }
+
+uint8_t DMXUSBWidget::channelValue(uint16_t channel)
+{
+    return _writeBuffer->at(channel);
+}
+
+bool DMXUSBWidget::updateChannelValue(uint16_t channel, uint8_t value)
+{
+    _writeBuffer->at(channel) = value;
+    setNewBuffer();
+
+    return true;
+}

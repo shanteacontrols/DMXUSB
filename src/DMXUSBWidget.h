@@ -88,11 +88,13 @@ class DMXUSBWidget
 
     DMXUSBWidget(HWA& hwa);
 
-    bool init();
-    bool deInit();
-    bool isInitialized();
-    void setWidgetInfo(widgetInfo_t&& widgetInfo);
-    void read();
+    bool    init();
+    bool    deInit();
+    bool    isInitialized();
+    void    setWidgetInfo(widgetInfo_t&& widgetInfo);
+    void    read();
+    uint8_t channelValue(uint16_t channel);
+    bool    updateChannelValue(uint16_t channel, uint8_t value);
 
     private:
     HWA& _hwa;
