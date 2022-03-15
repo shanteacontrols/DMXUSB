@@ -21,7 +21,10 @@ limitations under the License.
 
 DMXUSBWidget::DMXUSBWidget(HWA& hwa)
     : _hwa(hwa)
-{}
+{
+    _activeBuffer = &_buffer1;
+    _writeBuffer  = &_buffer2;
+}
 
 bool DMXUSBWidget::init()
 {
@@ -39,6 +42,8 @@ bool DMXUSBWidget::init()
     _state       = state_t::start;
     _dataLength  = 0;
     _dataCounter = 0;
+
+    _hwa.setBuffer(*_activeBuffer);
 
     return true;
 }
@@ -75,6 +80,8 @@ void DMXUSBWidget::read()
 
     if (_hwa.readUSB(_usbReadBuffer, size))
     {
+        bool updateBuffer = false;
+
         for (size_t i = 0; i < size; i++)
         {
             uint8_t data = _usbReadBuffer[i];
@@ -151,8 +158,9 @@ void DMXUSBWidget::read()
 
                     case 3:
                     {
-                        _byteParseCount = 0;
-                        _hwa.updateChannel(_channelToUpdate, data);
+                        _byteParseCount                    = 0;
+                        _writeBuffer->at(_channelToUpdate) = data;
+                        updateBuffer                       = true;
                     }
                     break;
 
@@ -163,7 +171,8 @@ void DMXUSBWidget::read()
                 else
                 {
                     // normal mode
-                    _hwa.updateChannel(_dataCounter, data);
+                    _writeBuffer->at(_dataCounter) = data;
+                    updateBuffer                   = true;
                 }
 
                 if (++_dataCounter == _dataLength)
@@ -184,7 +193,8 @@ void DMXUSBWidget::read()
                     {
                     case label_t::sendDMX:
                     {
-                        _hwa.packetComplete();
+                        // only in normal/full mode
+                        updateBuffer = true;
                     }
                     break;
 
@@ -281,6 +291,11 @@ void DMXUSBWidget::read()
             break;
             }
         }
+
+        if (updateBuffer)
+        {
+            setNewBuffer();
+        }
     }
 }
 
@@ -300,4 +315,12 @@ void DMXUSBWidget::sendFooter()
 {
     uint8_t footer = END_BYTE;
     _hwa.writeUSB(&footer, 1);
+}
+
+void DMXUSBWidget::setNewBuffer()
+{
+    std::swap(_writeBuffer, _activeBuffer);
+    _hwa.setBuffer(*_activeBuffer);
+
+    std::copy(std::begin(*_activeBuffer), std::end(*_activeBuffer), std::begin(*_writeBuffer));
 }

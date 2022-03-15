@@ -28,6 +28,7 @@ class DMXUSBWidget
     public:
     static constexpr size_t USB_READ_BUFFER_SIZE = 64;
 
+    using dmxBuffer_t     = std::array<uint8_t, 513>;
     using usbReadBuffer_t = std::array<uint8_t, USB_READ_BUFFER_SIZE>;
 
     class HWA
@@ -39,8 +40,7 @@ class DMXUSBWidget
         virtual bool deInit()                                       = 0;
         virtual bool readUSB(usbReadBuffer_t& buffer, size_t& size) = 0;
         virtual bool writeUSB(uint8_t* buffer, size_t size)         = 0;
-        virtual bool updateChannel(uint16_t channel, uint8_t value) = 0;
-        virtual void packetComplete()                               = 0;
+        virtual void setBuffer(dmxBuffer_t& buffer)                 = 0;
     };
 
     struct widgetInfo_t
@@ -137,6 +137,10 @@ class DMXUSBWidget
     uint16_t        _channelToUpdate = 0;
     uint8_t         _byteParseCount  = 0;
     bool            _diffMode        = false;
+    dmxBuffer_t     _buffer1         = {};
+    dmxBuffer_t     _buffer2         = {};
+    dmxBuffer_t*    _activeBuffer    = nullptr;
+    dmxBuffer_t*    _writeBuffer     = nullptr;
     widgetInfo_t    _widgetInfo;
 
     void sendHeader(label_t label, size_t size);
@@ -145,4 +149,5 @@ class DMXUSBWidget
     void sendDeviceSerNum();
     void sendWidgetParams();
     void sendExtWidgetParams();
+    void setNewBuffer();
 };
