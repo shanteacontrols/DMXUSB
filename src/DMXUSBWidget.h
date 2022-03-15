@@ -64,10 +64,14 @@ class DMXUSBWidget
             , deviceID(deviceID)
         {
             for (size_t i = 0; i < strlen(manufacturer) && i < 32; i++)
+            {
                 this->manufacturer[i] = manufacturer[i];
+            }
 
             for (size_t i = 0; i < strlen(deviceName) && i < 32; i++)
+            {
                 this->deviceName[i] = deviceName[i];
+            }
 
             // major version gets upper byte
             // minor version gets lower byte
@@ -77,9 +81,7 @@ class DMXUSBWidget
         widgetInfo_t() = default;
     };
 
-    DMXUSBWidget(HWA& hwa)
-        : _hwa(hwa)
-    {}
+    DMXUSBWidget(HWA& hwa);
 
     bool init();
     bool deInit();

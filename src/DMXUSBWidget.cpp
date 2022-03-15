@@ -19,13 +19,21 @@ limitations under the License.
 #include "DMXUSBWidget.h"
 #include <utility>
 
+DMXUSBWidget::DMXUSBWidget(HWA& hwa)
+    : _hwa(hwa)
+{}
+
 bool DMXUSBWidget::init()
 {
     if (_initialized)
+    {
         return true;
+    }
 
     if (!_hwa.init())
+    {
         return false;
+    }
 
     _initialized = true;
     _state       = state_t::start;
@@ -59,7 +67,9 @@ void DMXUSBWidget::setWidgetInfo(widgetInfo_t&& widgetInfo)
 void DMXUSBWidget::read()
 {
     if (!_initialized)
+    {
         return;
+    }
 
     size_t size = 0;
 
@@ -74,7 +84,9 @@ void DMXUSBWidget::read()
             case state_t::start:
             {
                 if (data == START_BYTE)
+                {
                     _state = state_t::label;
+                }
             }
             break;
 
@@ -87,7 +99,9 @@ void DMXUSBWidget::read()
                     _state = state_t::length_lsb;
 
                     if (_label == static_cast<uint8_t>(label_t::sendDiffDMX))
+                    {
                         _diffMode = true;
+                    }
                 }
                 else
                 {
@@ -219,7 +233,9 @@ void DMXUSBWidget::read()
                         buffer[1] = _widgetInfo.estaID >> 8 & 0xFF;
 
                         for (size_t i = 0; i < strlen(_widgetInfo.manufacturer); i++)
+                        {
                             buffer[2 + i] = _widgetInfo.manufacturer[i];
+                        }
 
                         sendHeader(labelEnum, size);
                         _hwa.writeUSB(buffer, size);
@@ -237,7 +253,9 @@ void DMXUSBWidget::read()
                         buffer[1] = _widgetInfo.deviceID >> 8 & 0xFF;
 
                         for (size_t i = 0; i < strlen(_widgetInfo.deviceName); i++)
+                        {
                             buffer[2 + i] = _widgetInfo.deviceName[i];
+                        }
 
                         sendHeader(labelEnum, size);
                         _hwa.writeUSB(buffer, size);
@@ -257,8 +275,10 @@ void DMXUSBWidget::read()
             break;
 
             default:
+            {
                 _state = state_t::start;
-                break;
+            }
+            break;
             }
         }
     }
