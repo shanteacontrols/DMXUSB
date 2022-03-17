@@ -39,7 +39,7 @@ bool DMXUSBWidget::init()
     }
 
     _initialized = true;
-    _state       = state_t::start;
+    _state       = state_t::START;
     _dataLength  = 0;
     _dataCounter = 0;
 
@@ -88,51 +88,51 @@ void DMXUSBWidget::read()
 
             switch (_state)
             {
-            case state_t::start:
+            case state_t::START:
             {
                 if (data == START_BYTE)
                 {
-                    _state = state_t::label;
+                    _state = state_t::LABEL;
                 }
             }
             break;
 
-            case state_t::label:
+            case state_t::LABEL:
             {
                 _label = data;
 
-                if ((_label == static_cast<uint8_t>(label_t::sendDMX)) || (_label == static_cast<uint8_t>(label_t::sendDiffDMX)))
+                if ((_label == static_cast<uint8_t>(label_t::SEND_DMX)) || (_label == static_cast<uint8_t>(label_t::SEND_DIFF_DMX)))
                 {
-                    _state = state_t::length_lsb;
+                    _state = state_t::LENGTH_LSB;
 
-                    if (_label == static_cast<uint8_t>(label_t::sendDiffDMX))
+                    if (_label == static_cast<uint8_t>(label_t::SEND_DIFF_DMX))
                     {
                         _diffMode = true;
                     }
                 }
                 else
                 {
-                    _state = state_t::end;
+                    _state = state_t::END;
                 }
             }
             break;
 
-            case state_t::length_lsb:
+            case state_t::LENGTH_LSB:
             {
                 _dataLength = data;
-                _state      = state_t::length_msb;
+                _state      = state_t::LENGTH_MSB;
             }
             break;
 
-            case state_t::length_msb:
+            case state_t::LENGTH_MSB:
             {
                 _dataLength |= (data << 8);
                 _dataCounter = 0;
-                _state       = (_dataLength > 0) ? state_t::data : state_t::end;
+                _state       = (_dataLength > 0) ? state_t::DATA : state_t::END;
             }
             break;
 
-            case state_t::data:
+            case state_t::DATA:
             {
                 if (_diffMode)
                 {
@@ -177,49 +177,49 @@ void DMXUSBWidget::read()
 
                 if (++_dataCounter == _dataLength)
                 {
-                    _state = state_t::end;
+                    _state = state_t::END;
                 }
             }
             break;
 
-            case state_t::end:
+            case state_t::END:
             {
                 if (data == END_BYTE)
                 {
-                    _state         = state_t::start;
+                    _state         = state_t::START;
                     auto labelEnum = static_cast<label_t>(_label);
 
                     switch (labelEnum)
                     {
-                    case label_t::sendDMX:
+                    case label_t::SEND_DMX:
                     {
                         // only in normal/full mode
                         updateBuffer = true;
                     }
                     break;
 
-                    case label_t::getSerialNumber:
+                    case label_t::GET_SERIAL_NUMBER:
                     {
-                        constexpr size_t size = 4;
+                        constexpr size_t SIZE = 4;
 
-                        uint8_t buffer[size] = {
+                        uint8_t buffer[SIZE] = {
                             static_cast<uint8_t>((_widgetInfo.serialNr >> 0) & 0xFF),
                             static_cast<uint8_t>((_widgetInfo.serialNr >> 8) & 0xFF),
                             static_cast<uint8_t>((_widgetInfo.serialNr >> 16) & 0xFF),
                             static_cast<uint8_t>((_widgetInfo.serialNr >> 24) & 0xFF),
                         };
 
-                        sendHeader(labelEnum, size);
-                        _hwa.writeUSB(buffer, size);
+                        sendHeader(labelEnum, SIZE);
+                        _hwa.writeUSB(buffer, SIZE);
                         sendFooter();
                     }
                     break;
 
-                    case label_t::getWidgetParams:
+                    case label_t::GET_WIDGET_PARAMS:
                     {
-                        constexpr size_t size = 5;
+                        constexpr size_t SIZE = 5;
 
-                        uint8_t buffer[size] = {
+                        uint8_t buffer[SIZE] = {
                             static_cast<uint8_t>((_widgetInfo.fwVersion >> 0) & 0xFF),    // firmware version LSB
                             static_cast<uint8_t>((_widgetInfo.fwVersion >> 8) & 0xFF),    // firmware version MSB
                             0x09,                                                         // DMX output break time in 10.67 microsecond units: 9
@@ -227,13 +227,13 @@ void DMXUSBWidget::read()
                             0x28,                                                         // DMX output rate in packets per second: 40
                         };
 
-                        sendHeader(labelEnum, size);
-                        _hwa.writeUSB(buffer, size);
+                        sendHeader(labelEnum, SIZE);
+                        _hwa.writeUSB(buffer, SIZE);
                         sendFooter();
                     }
                     break;
 
-                    case label_t::deviceManufacturerReq:
+                    case label_t::DEVICE_MANUFACTURER_REQ:
                     {
                         size_t size = sizeof(_widgetInfo.estaID) + strlen(_widgetInfo.manufacturer);
 
@@ -253,7 +253,7 @@ void DMXUSBWidget::read()
                     }
                     break;
 
-                    case label_t::deviceNameReq:
+                    case label_t::DEVICE_NAME_REQ:
                     {
                         size_t size = sizeof(_widgetInfo.deviceID) + strlen(_widgetInfo.deviceName);
 
@@ -286,7 +286,7 @@ void DMXUSBWidget::read()
 
             default:
             {
-                _state = state_t::start;
+                _state = state_t::START;
             }
             break;
             }

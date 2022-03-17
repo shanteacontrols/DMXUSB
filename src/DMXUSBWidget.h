@@ -104,34 +104,34 @@ class DMXUSBWidget
 
     enum class state_t : uint8_t
     {
-        start,
-        label,
-        length_lsb,
-        length_msb,
-        data,
-        end
+        START,
+        LABEL,
+        LENGTH_LSB,
+        LENGTH_MSB,
+        DATA,
+        END
     };
 
     enum class label_t : uint8_t
     {
-        reprogramFWreq        = 1,
-        programFlashPage      = 2,
-        getWidgetParams       = 3,
-        setWidgetParams       = 4,
-        receivedPacket        = 5,
-        sendDMX               = 6,
-        sendRDM               = 7,
-        receiveDMXonChange    = 8,
-        receivedDMXonChange   = 9,
-        getSerialNumber       = 10,
-        sendRDMdiscoveryReq   = 11,
-        deviceManufacturerReq = 77,
-        deviceNameReq         = 78,
-        sendDiffDMX           = 80,
+        REPROGRAM_FW_REQ        = 1,
+        PROGRAM_FLASH_PAGE      = 2,
+        GET_WIDGET_PARAMS       = 3,
+        SET_WIDGET_PARAMS       = 4,
+        RECEIVED_PACKET         = 5,
+        SEND_DMX                = 6,
+        SEND_RDM                = 7,
+        RECEIVE_DMX_ON_CHANGE   = 8,
+        RECEIVED_DMX_ON_CHANGE  = 9,
+        GET_SERIAL_NUMBER       = 10,
+        SEND_RDM_DISCOVERY_REQ  = 11,
+        DEVICE_MANUFACTURER_REQ = 77,
+        DEVICE_NAME_REQ         = 78,
+        SEND_DIFF_DMX           = 80,
     };
 
     bool            _initialized     = false;
-    state_t         _state           = state_t::start;
+    state_t         _state           = state_t::START;
     uint8_t         _label           = 0;
     uint16_t        _dataLength      = 0;
     uint16_t        _dataCounter     = 0;
