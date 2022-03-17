@@ -43,47 +43,50 @@ class DMXUSBWidget
         virtual void setBuffer(dmxBuffer_t& buffer)                 = 0;
     };
 
-    struct widgetInfo_t
+    class WidgetInfo
     {
-        uint32_t serialNr         = 0xFFFFFFFF;
-        uint16_t estaID           = 0xFFFF;
-        uint16_t deviceID         = 0x00;
-        uint16_t fwVersion        = 0;
-        char     manufacturer[32] = {};
-        char     deviceName[32]   = {};
-
+        public:
         struct fwVersion_t
         {
             uint8_t major = 0;
             uint8_t minor = 0;
         };
 
-        widgetInfo_t(uint32_t    serialNr,
-                     uint16_t    estaID,
-                     uint16_t    deviceID,
-                     fwVersion_t fwVersion,
-                     const char* manufacturer,
-                     const char* deviceName)
-            : serialNr(serialNr)
-            , estaID(estaID)
-            , deviceID(deviceID)
+        WidgetInfo(uint32_t    serialNr,
+                   uint16_t    estaID,
+                   uint16_t    deviceID,
+                   fwVersion_t fwVersion,
+                   const char* manufacturer,
+                   const char* deviceName)
+            : _serialNr(serialNr)
+            , _estaId(estaID)
+            , _deviceId(deviceID)
         {
             for (size_t i = 0; i < strlen(manufacturer) && i < 32; i++)
             {
-                this->manufacturer[i] = manufacturer[i];
+                this->_manufacturer[i] = manufacturer[i];
             }
 
             for (size_t i = 0; i < strlen(deviceName) && i < 32; i++)
             {
-                this->deviceName[i] = deviceName[i];
+                this->_deviceName[i] = deviceName[i];
             }
 
             // major version gets upper byte
             // minor version gets lower byte
-            this->fwVersion = (fwVersion.major << 8) | fwVersion.minor;
+            this->_fwVersion = (fwVersion.major << 8) | fwVersion.minor;
         }
 
-        widgetInfo_t() = default;
+        WidgetInfo() = default;
+
+        private:
+        friend class DMXUSBWidget;
+        uint32_t _serialNr         = 0xFFFFFFFF;
+        uint16_t _estaId           = 0xFFFF;
+        uint16_t _deviceId         = 0x00;
+        uint16_t _fwVersion        = 0;
+        char     _manufacturer[32] = {};
+        char     _deviceName[32]   = {};
     };
 
     DMXUSBWidget(HWA& hwa);
@@ -91,7 +94,7 @@ class DMXUSBWidget
     bool    init();
     bool    deInit();
     bool    isInitialized();
-    void    setWidgetInfo(widgetInfo_t&& widgetInfo);
+    void    setWidgetInfo(WidgetInfo&& widgetInfo);
     void    read();
     uint8_t channelValue(uint16_t channel);
     bool    updateChannelValue(uint16_t channel, uint8_t value);
@@ -143,7 +146,7 @@ class DMXUSBWidget
     dmxBuffer_t     _buffer2         = {};
     dmxBuffer_t*    _activeBuffer    = nullptr;
     dmxBuffer_t*    _writeBuffer     = nullptr;
-    widgetInfo_t    _widgetInfo;
+    WidgetInfo      _widgetInfo;
 
     void sendHeader(label_t label, size_t size);
     void sendFooter();

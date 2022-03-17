@@ -64,7 +64,7 @@ bool DMXUSBWidget::isInitialized()
     return _initialized;
 }
 
-void DMXUSBWidget::setWidgetInfo(widgetInfo_t&& widgetInfo)
+void DMXUSBWidget::setWidgetInfo(WidgetInfo&& widgetInfo)
 {
     _widgetInfo = std::move(widgetInfo);
 }
@@ -203,10 +203,10 @@ void DMXUSBWidget::read()
                         constexpr size_t SIZE = 4;
 
                         uint8_t buffer[SIZE] = {
-                            static_cast<uint8_t>((_widgetInfo.serialNr >> 0) & 0xFF),
-                            static_cast<uint8_t>((_widgetInfo.serialNr >> 8) & 0xFF),
-                            static_cast<uint8_t>((_widgetInfo.serialNr >> 16) & 0xFF),
-                            static_cast<uint8_t>((_widgetInfo.serialNr >> 24) & 0xFF),
+                            static_cast<uint8_t>((_widgetInfo._serialNr >> 0) & 0xFF),
+                            static_cast<uint8_t>((_widgetInfo._serialNr >> 8) & 0xFF),
+                            static_cast<uint8_t>((_widgetInfo._serialNr >> 16) & 0xFF),
+                            static_cast<uint8_t>((_widgetInfo._serialNr >> 24) & 0xFF),
                         };
 
                         sendHeader(labelEnum, SIZE);
@@ -220,11 +220,11 @@ void DMXUSBWidget::read()
                         constexpr size_t SIZE = 5;
 
                         uint8_t buffer[SIZE] = {
-                            static_cast<uint8_t>((_widgetInfo.fwVersion >> 0) & 0xFF),    // firmware version LSB
-                            static_cast<uint8_t>((_widgetInfo.fwVersion >> 8) & 0xFF),    // firmware version MSB
-                            0x09,                                                         // DMX output break time in 10.67 microsecond units: 9
-                            0x02,                                                         // DMX output Mark After Break time in 10.67 microsecond units: 1
-                            0x28,                                                         // DMX output rate in packets per second: 40
+                            static_cast<uint8_t>((_widgetInfo._fwVersion >> 0) & 0xFF),    // firmware version LSB
+                            static_cast<uint8_t>((_widgetInfo._fwVersion >> 8) & 0xFF),    // firmware version MSB
+                            0x09,                                                          // DMX output break time in 10.67 microsecond units: 9
+                            0x02,                                                          // DMX output Mark After Break time in 10.67 microsecond units: 1
+                            0x28,                                                          // DMX output rate in packets per second: 40
                         };
 
                         sendHeader(labelEnum, SIZE);
@@ -235,16 +235,16 @@ void DMXUSBWidget::read()
 
                     case label_t::DEVICE_MANUFACTURER_REQ:
                     {
-                        size_t size = sizeof(_widgetInfo.estaID) + strlen(_widgetInfo.manufacturer);
+                        size_t size = sizeof(_widgetInfo._estaId) + strlen(_widgetInfo._manufacturer);
 
                         uint8_t buffer[32];
 
-                        buffer[0] = _widgetInfo.estaID & 0xFF;
-                        buffer[1] = _widgetInfo.estaID >> 8 & 0xFF;
+                        buffer[0] = _widgetInfo._estaId & 0xFF;
+                        buffer[1] = _widgetInfo._estaId >> 8 & 0xFF;
 
-                        for (size_t i = 0; i < strlen(_widgetInfo.manufacturer); i++)
+                        for (size_t i = 0; i < strlen(_widgetInfo._manufacturer); i++)
                         {
-                            buffer[2 + i] = _widgetInfo.manufacturer[i];
+                            buffer[2 + i] = _widgetInfo._manufacturer[i];
                         }
 
                         sendHeader(labelEnum, size);
@@ -255,16 +255,16 @@ void DMXUSBWidget::read()
 
                     case label_t::DEVICE_NAME_REQ:
                     {
-                        size_t size = sizeof(_widgetInfo.deviceID) + strlen(_widgetInfo.deviceName);
+                        size_t size = sizeof(_widgetInfo._deviceId) + strlen(_widgetInfo._deviceName);
 
                         uint8_t buffer[32];
 
-                        buffer[0] = _widgetInfo.deviceID & 0xFF;
-                        buffer[1] = _widgetInfo.deviceID >> 8 & 0xFF;
+                        buffer[0] = _widgetInfo._deviceId & 0xFF;
+                        buffer[1] = _widgetInfo._deviceId >> 8 & 0xFF;
 
-                        for (size_t i = 0; i < strlen(_widgetInfo.deviceName); i++)
+                        for (size_t i = 0; i < strlen(_widgetInfo._deviceName); i++)
                         {
-                            buffer[2 + i] = _widgetInfo.deviceName[i];
+                            buffer[2 + i] = _widgetInfo._deviceName[i];
                         }
 
                         sendHeader(labelEnum, size);
