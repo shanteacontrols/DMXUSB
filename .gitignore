@@ -1,0 +1,9 @@
+build/
+.DS_Store
+Documentation/*
+*compile_commands.json
+*ipch*
+*Objects.mk*
+*.profraw
+**/tests/test_run/*
+**/.cache/*
