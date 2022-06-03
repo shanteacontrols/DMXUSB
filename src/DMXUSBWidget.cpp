@@ -318,7 +318,7 @@ void DMXUSBWidget::sendFooter()
 void DMXUSBWidget::setNewBuffer()
 {
     std::swap(_writeBuffer, _activeBuffer);
-    _hwa.setBuffer(*_activeBuffer);
+    _hwa.updateBuffer(*_activeBuffer);
 
     std::copy(std::begin(*_activeBuffer), std::end(*_activeBuffer), std::begin(*_writeBuffer));
 }

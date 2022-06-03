@@ -40,7 +40,7 @@ class DMXUSBWidget
         virtual bool deInit()                                       = 0;
         virtual bool readUSB(usbReadBuffer_t& buffer, size_t& size) = 0;
         virtual bool writeUSB(uint8_t* buffer, size_t size)         = 0;
-        virtual void setBuffer(dmxBuffer_t& buffer)                 = 0;
+        virtual void updateBuffer(dmxBuffer_t& buffer)              = 0;
     };
 
     class WidgetInfo
