@@ -36,7 +36,7 @@ class DMXUSBWidget
         public:
         HWA() = default;
 
-        virtual bool init()                                         = 0;
+        virtual bool init(dmxBuffer_t& buffer)                      = 0;
         virtual bool deInit()                                       = 0;
         virtual bool readUSB(usbReadBuffer_t& buffer, size_t& size) = 0;
         virtual bool writeUSB(uint8_t* buffer, size_t size)         = 0;

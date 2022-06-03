@@ -33,7 +33,7 @@ bool DMXUSBWidget::init()
         return true;
     }
 
-    if (!_hwa.init())
+    if (!_hwa.init(*_activeBuffer))
     {
         return false;
     }
@@ -42,8 +42,6 @@ bool DMXUSBWidget::init()
     _state       = state_t::START;
     _dataLength  = 0;
     _dataCounter = 0;
-
-    _hwa.setBuffer(*_activeBuffer);
 
     return true;
 }
